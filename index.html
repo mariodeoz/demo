@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Continuous Design Demo</title>
+
+  <!--
+    Este archivo es generado por figmagic a partir de Figma.
+    El workflow de GitHub Actions lo actualiza automáticamente
+    cada vez que el diseñador dispara el plugin Continuous Design.
+  -->
+  <link rel="stylesheet" href="tokens/colors.css">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f0f2f5;
+      gap: 24px;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #1a1a2e;
+    }
+
+    .demo-button {
+      padding: 16px 48px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+
+      /*
+        El color viene del token generado por figmagic desde Figma.
+        Si el archivo tokens/colors.css no existe, usa azul como fallback.
+
+        Para cambiar este color:
+          1. Abrí Figma
+          2. Cambiá el Color Style llamado "button-color"
+          3. Hacé clic en "Start CI Flow" en el plugin Continuous Design
+          4. El workflow actualiza tokens/colors.css y este botón cambia de color
+      */
+      background-color: var(--button-color, #0057ff);
+
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      transition: opacity 0.2s ease, transform 0.1s ease;
+    }
+
+    .demo-button:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    .demo-button:active {
+      transform: translateY(0);
+    }
+
+    .info-box {
+      background: white;
+      border-radius: 12px;
+      padding: 20px 28px;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .info-box h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .info-box p {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.6;
+    }
+
+    .token-name {
+      background: #f0f2f5;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #0057ff;
+    }
+
+    .color-preview {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background-color: var(--button-color, #0057ff);
+      vertical-align: middle;
+      margin-right: 4px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Continuous Design Demo</h1>
+
+  <button class="demo-button">Botón de Prueba</button>
+
+  <div class="info-box">
+    <h2>Cómo funciona</h2>
+    <p>
+      El color de este botón (<span class="color-preview"></span><span class="token-name">--button-color</span>)
+      viene directamente del Color Style <span class="token-name">button-color</span> de tu archivo Figma.<br><br>
+      Cuando cambiás el color en Figma y ejecutás el plugin
+      <strong>Continuous Design</strong>, el workflow actualiza
+      <span class="token-name">tokens/colors.css</span> y este botón refleja el cambio automáticamente.
+    </p>
+  </div>
+
+</body>
+</html>

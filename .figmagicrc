@@ -1,0 +1,6 @@
+{
+  "outputTokenFormat": "css",
+  "outputFolderTokens": "tokens",
+  "recompileLocal": false,
+  "usePostscriptFontNames": false
+}

@@ -11,17 +11,19 @@ on:
         description: 'Which version of the Figma document to use?'
         required: false
         default: '' # Will use latest if not set
+
   push:
     branches:
       - "main"
 
+# Needed so the workflow can push the generated tokens back to the repo
+permissions:
+  contents: write
+
 jobs:
   build-unix:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: ["ubuntu-latest"]
-        node-version: [14.x]
+    runs-on: ubuntu-latest
+
     steps:
       - name: Inputs
         id: input-messages
@@ -31,24 +33,56 @@ jobs:
 
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 18.x
         id: node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '18.x'
 
       - name: Install Figmagic
         id: install
         run: npm install -D figmagic
 
-      - name: Run Figmagic and use latest Figma data
+      # ---------------------------------------------------------------
+      # Run figmagic to pull design tokens from Figma.
+      # figmagic reads Color Styles from the Figma file and writes
+      # CSS custom properties to tokens/colors.css (and other token files).
+      #
+      # IMPORTANT: In Figma, create a Color Style named "button-color".
+      # figmagic will generate:  --button-color: #<hex>;  in tokens/colors.css
+      # ---------------------------------------------------------------
+
+      - name: Run Figmagic (latest Figma data)
         id: figma-latest
-        if: ${{ !github.event.inputs.version }}
+        if: ${{ !github.event.inputs.version || github.event.inputs.version == 'Latest' }}
         run: npx figmagic --token ${{ secrets.FIGMA_TOKEN }} --url ${{ secrets.FIGMA_URL }}
 
-      - name: Run Figmagic and use named version of Figma data
+      - name: Run Figmagic (named Figma version)
         id: figma-versioned
-        if: ${{ github.event.inputs.version }}
+        if: ${{ github.event.inputs.version && github.event.inputs.version != 'Latest' }}
         run: npx figmagic --token ${{ secrets.FIGMA_TOKEN }} --url ${{ secrets.FIGMA_URL }} --versionName ${{ github.event.inputs.version }}
+
+      # ---------------------------------------------------------------
+      # Commit the generated design tokens back to the repository.
+      # This is the KEY step: without this, the color change never
+      # reaches the web page.
+      # ---------------------------------------------------------------
+
+      - name: Commit updated design tokens
+        id: commit-tokens
+        run: |
+          git config user.name "Continuous Design Bot"
+          git config user.email "actions@github.com"
+
+          git add tokens/
+
+          # Only commit if something actually changed
+          if git diff --staged --quiet; then
+            echo "No token changes detected - skipping commit."
+          else
+            git commit -m "design: update tokens from Figma — ${{ github.event.inputs.message || 'push trigger' }}"
+            git push
+            echo "Design tokens committed and pushed."
+          fi
