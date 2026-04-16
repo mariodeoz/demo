@@ -12,10 +12,6 @@ on:
         required: false
         default: '' # Will use latest if not set
 
-  push:
-    branches:
-      - "main"
-
 # Needed so the workflow can push the generated tokens back to the repo
 permissions:
   contents: write
