@@ -72,13 +72,28 @@ jobs:
           git config user.name "Continuous Design Bot"
           git config user.email "actions@github.com"
 
+          # Guard: if figmagic didn't generate colors.css, fail loudly instead of deleting it.
+          # This happens when the Figma file is missing the "Design tokens" page + "Colors" frame.
+          if [ ! -f "tokens/colors.css" ]; then
+            echo ""
+            echo "ERROR: figmagic did not generate tokens/colors.css"
+            echo "--------------------------------------------------------"
+            echo "In your Figma file you need:"
+            echo "  1. A PAGE named exactly: Design tokens"
+            echo "  2. A FRAME inside it named: Colors"
+            echo "  3. A RECTANGLE inside Colors named: button-color"
+            echo "     with the fill color you want for the button"
+            echo "--------------------------------------------------------"
+            exit 1
+          fi
+
           git add tokens/
 
           # Only commit if something actually changed
           if git diff --staged --quiet; then
             echo "No token changes detected - skipping commit."
           else
-            git commit -m "design: update tokens from Figma — ${{ github.event.inputs.message || 'push trigger' }}"
+            git commit -m "design: update tokens from Figma — ${{ github.event.inputs.message || 'plugin trigger' }}"
             git push
             echo "Design tokens committed and pushed."
           fi
