@@ -56,19 +56,60 @@ jobs:
         if: ${{ github.event.inputs.version && github.event.inputs.version != 'Latest' }}
         run: npx figmagic --token ${{ secrets.FIGMA_TOKEN }} --url ${{ secrets.FIGMA_URL }} --versionName ${{ github.event.inputs.version }} --outputTokenFormat css
 
+      # ---------------------------------------------------------------
+      # figmagic ignores --outputTokenFormat in some versions and always
+      # outputs colors.ts. This step converts it to colors.css so the
+      # rest of the pipeline can use standard CSS custom properties.
+      # ---------------------------------------------------------------
+
+      - name: Convert colors.ts to colors.css
+        id: convert-tokens
+        run: |
+          if [ ! -f "tokens/colors.ts" ]; then
+            echo "tokens/colors.ts not found — nothing to convert."
+            exit 0
+          fi
+          echo "=== colors.ts content ==="
+          cat tokens/colors.ts
+          node - <<'EOF'
+          const fs = require('fs');
+          const src = fs.readFileSync('tokens/colors.ts', 'utf8');
+          const lines = [];
+
+          // Format A: export const colors = { "buttonColor": "#hex" };
+          const objMatch = src.match(/export\s+const\s+colors\s*=\s*(\{[\s\S]*?\});/);
+          if (objMatch) {
+            const obj = JSON.parse(objMatch[1]);
+            for (const [k, v] of Object.entries(obj)) {
+              const name = '--' + k.replace(/([A-Z])/g, (_, c) => '-' + c.toLowerCase());
+              lines.push('  ' + name + ': ' + v + ';');
+            }
+          } else {
+            // Format B: export const buttonColor = "#hex";
+            for (const [, k, v] of src.matchAll(/export\s+const\s+(\w+)\s*=\s*["']([^"']+)["'];/g)) {
+              const name = '--' + k.replace(/([A-Z])/g, (_, c) => '-' + c.toLowerCase());
+              lines.push('  ' + name + ': ' + v + ';');
+            }
+          }
+
+          if (lines.length === 0) {
+            console.error('ERROR: could not parse any color tokens from colors.ts');
+            process.exit(1);
+          }
+
+          const css = ':root {\n' + lines.join('\n') + '\n}\n';
+          fs.writeFileSync('tokens/colors.css', css);
+          console.log('=== Generated colors.css ===\n' + css);
+          EOF
+
       - name: Diagnose figmagic output
         id: diagnose
         run: |
           echo "=== Contents of tokens/ folder ==="
           ls -la tokens/ 2>/dev/null || echo "(tokens/ folder is empty or does not exist)"
-          echo ""
-          echo "=== All generated token files ==="
-          find . -path ./.git -prune -o -name "*.css" -print -o -name "*.json" -print 2>/dev/null | grep -v node_modules || true
 
       # ---------------------------------------------------------------
       # Commit the generated design tokens back to the repository.
-      # This is the KEY step: without this, the color change never
-      # reaches the web page.
       # ---------------------------------------------------------------
 
       - name: Commit updated design tokens
@@ -77,25 +118,8 @@ jobs:
           git config user.name "Continuous Design Bot"
           git config user.email "actions@github.com"
 
-          # Guard: if figmagic didn't generate colors.css, fail loudly instead of deleting it.
-          # Requires a Color Style named "button-color" in the Figma file.
-          # See: https://github.com/mikaelvesavuori/figmagic#color-styles
           if [ ! -f "tokens/colors.css" ]; then
-            echo ""
-            echo "ERROR: figmagic did not generate tokens/colors.css"
-            echo "--------------------------------------------------------"
-            echo "Most likely causes:"
-            echo "  1. FIGMA_URL secret has wrong format."
-            echo "     It must be: https://www.figma.com/file/FILE_KEY/filename"
-            echo "     NOT a URL with ?node-id=... at the end."
-            echo ""
-            echo "  2. No Color Style named 'button-color' exists in Figma."
-            echo "     In Figma: select the rectangle, go to Fill,"
-            echo "     click the 4-dot icon and create a style called 'button-color'."
-            echo ""
-            echo "  3. The Color Style exists but the Figma file has no styles at all."
-            echo "     Check above in 'Diagnose figmagic output' what was generated."
-            echo "--------------------------------------------------------"
+            echo "ERROR: tokens/colors.css was not generated or converted."
             exit 1
           fi
 
