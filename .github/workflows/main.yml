@@ -76,17 +76,11 @@ jobs:
           const src = fs.readFileSync('tokens/colors.ts', 'utf8');
           const lines = [];
 
-          // Format A: export const colors = { "buttonColor": "#hex" };
-          const objMatch = src.match(/export\s+const\s+colors\s*=\s*(\{[\s\S]*?\});/);
+          // figmagic format: const colors = { "buttonColor": "rgba(...)" } as const;
+          const objMatch = src.match(/const\s+\w+\s*=\s*(\{[\s\S]*?\})\s*(?:as\s+const)?\s*;/);
           if (objMatch) {
             const obj = JSON.parse(objMatch[1]);
             for (const [k, v] of Object.entries(obj)) {
-              const name = '--' + k.replace(/([A-Z])/g, (_, c) => '-' + c.toLowerCase());
-              lines.push('  ' + name + ': ' + v + ';');
-            }
-          } else {
-            // Format B: export const buttonColor = "#hex";
-            for (const [, k, v] of src.matchAll(/export\s+const\s+(\w+)\s*=\s*["']([^"']+)["'];/g)) {
               const name = '--' + k.replace(/([A-Z])/g, (_, c) => '-' + c.toLowerCase());
               lines.push('  ' + name + ': ' + v + ';');
             }
