@@ -60,6 +60,15 @@ jobs:
         if: ${{ github.event.inputs.version && github.event.inputs.version != 'Latest' }}
         run: npx figmagic --token ${{ secrets.FIGMA_TOKEN }} --url ${{ secrets.FIGMA_URL }} --versionName ${{ github.event.inputs.version }}
 
+      - name: Diagnose figmagic output
+        id: diagnose
+        run: |
+          echo "=== Contents of tokens/ folder ==="
+          ls -la tokens/ 2>/dev/null || echo "(tokens/ folder is empty or does not exist)"
+          echo ""
+          echo "=== All generated token files ==="
+          find . -path ./.git -prune -o -name "*.css" -print -o -name "*.json" -print 2>/dev/null | grep -v node_modules || true
+
       # ---------------------------------------------------------------
       # Commit the generated design tokens back to the repository.
       # This is the KEY step: without this, the color change never
@@ -73,16 +82,23 @@ jobs:
           git config user.email "actions@github.com"
 
           # Guard: if figmagic didn't generate colors.css, fail loudly instead of deleting it.
-          # This happens when the Figma file is missing the "Design tokens" page + "Colors" frame.
+          # Requires a Color Style named "button-color" in the Figma file.
+          # See: https://github.com/mikaelvesavuori/figmagic#color-styles
           if [ ! -f "tokens/colors.css" ]; then
             echo ""
             echo "ERROR: figmagic did not generate tokens/colors.css"
             echo "--------------------------------------------------------"
-            echo "In your Figma file you need:"
-            echo "  1. A PAGE named exactly: Design tokens"
-            echo "  2. A FRAME inside it named: Colors"
-            echo "  3. A RECTANGLE inside Colors named: button-color"
-            echo "     with the fill color you want for the button"
+            echo "Most likely causes:"
+            echo "  1. FIGMA_URL secret has wrong format."
+            echo "     It must be: https://www.figma.com/file/FILE_KEY/filename"
+            echo "     NOT a URL with ?node-id=... at the end."
+            echo ""
+            echo "  2. No Color Style named 'button-color' exists in Figma."
+            echo "     In Figma: select the rectangle, go to Fill,"
+            echo "     click the 4-dot icon and create a style called 'button-color'."
+            echo ""
+            echo "  3. The Color Style exists but the Figma file has no styles at all."
+            echo "     Check above in 'Diagnose figmagic output' what was generated."
             echo "--------------------------------------------------------"
             exit 1
           fi
