@@ -42,23 +42,35 @@ jobs:
         run: npm install -D figmagic
 
       # ---------------------------------------------------------------
-      # Run figmagic to pull design tokens from Figma.
-      # figmagic reads Color Styles from the Figma file and writes
-      # CSS custom properties to tokens/colors.css (and other token files).
-      #
-      # IMPORTANT: In Figma, create a Color Style named "button-color".
-      # figmagic will generate:  --button-color: #<hex>;  in tokens/colors.css
+      # figmagic only accepts the raw file key, not the full Figma URL.
+      # This step extracts the key from URLs like:
+      #   https://www.figma.com/design/FILEID/name
+      #   https://www.figma.com/file/FILEID/name
+      # or passes the value as-is if it's already just the key.
       # ---------------------------------------------------------------
+
+      - name: Extract Figma file key
+        id: figma-key
+        run: |
+          RAW="${{ secrets.FIGMA_URL }}"
+          # Extract the segment after /design/ or /file/
+          KEY=$(echo "$RAW" | sed -E 's|.*/(design|file)/([^/?]+).*|\2|')
+          # If nothing was extracted (no URL path match), use the raw value as-is
+          if [ -z "$KEY" ] || [ "$KEY" = "$RAW" ]; then
+            KEY="$RAW"
+          fi
+          echo "FIGMA_KEY=$KEY" >> "$GITHUB_ENV"
+          echo "Using Figma file key: $KEY"
 
       - name: Run Figmagic (latest Figma data)
         id: figma-latest
         if: ${{ !github.event.inputs.version || github.event.inputs.version == 'Latest' }}
-        run: npx figmagic --token ${{ secrets.FIGMA_TOKEN }} --url ${{ secrets.FIGMA_URL }}
+        run: npx figmagic --token ${{ secrets.FIGMA_TOKEN }} --url "$FIGMA_KEY"
 
       - name: Run Figmagic (named Figma version)
         id: figma-versioned
         if: ${{ github.event.inputs.version && github.event.inputs.version != 'Latest' }}
-        run: npx figmagic --token ${{ secrets.FIGMA_TOKEN }} --url ${{ secrets.FIGMA_URL }} --versionName ${{ github.event.inputs.version }}
+        run: npx figmagic --token ${{ secrets.FIGMA_TOKEN }} --url "$FIGMA_KEY" --versionName ${{ github.event.inputs.version }}
 
       - name: Diagnose figmagic output
         id: diagnose
