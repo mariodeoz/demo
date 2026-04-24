@@ -3,7 +3,7 @@
 const colors = {
  "rectangle2": "rgba(243, 207, 207, 1)",
  "rectangle1": "rgba(255, 255, 255, 1)",
- "buttonColor": "rgba(255, 10, 10, 1)"
+ "buttonColor": "rgba(10, 63, 255, 1)"
 } as const;
 
 export default colors;
