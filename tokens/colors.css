@@ -1,6 +1,6 @@
 :root {
-  --background-color: rgba(209, 197, 197, 1);
-  --surface-color: rgba(243, 207, 207, 1);
+  --background-color: rgba(244, 236, 236, 1);
+  --surface-color: rgba(245, 248, 191, 1);
   --text-color: rgba(255, 255, 255, 1);
-  --button-color: rgba(10, 63, 255, 1);
+  --button-color: rgba(255, 10, 222, 1);
 }
