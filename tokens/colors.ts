@@ -6,9 +6,9 @@ const colors = {
  "panel": "rgba(0, 0, 0, 1)",
  "surfaceColor": "rgba(245, 248, 191, 1)",
  "textoBotN": "rgba(0, 0, 0, 1)",
- "textColor": "rgba(255, 255, 255, 1)",
+ "textColor": "rgba(255, 249, 87, 1)",
  "colorDelBoton": "rgba(255, 255, 255, 1)",
- "buttonColor": "rgba(255, 10, 63, 1)"
+ "buttonColor": "rgba(63, 10, 255, 1)"
 } as const;
 
 export default colors;
