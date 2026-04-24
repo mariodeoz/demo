@@ -1,6 +1,5 @@
 :root {
+  --rectangle2: rgba(243, 207, 207, 1);
+  --rectangle1: rgba(255, 255, 255, 1);
   --button-color: rgba(255, 10, 10, 1);
-  --background-color: #f0f2f5;
-  --text-color: #ffffff;
-  --surface-color: #ffffff;
 }
