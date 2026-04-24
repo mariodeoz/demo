@@ -8,7 +8,7 @@ const colors = {
  "textoBotN": "rgba(0, 0, 0, 1)",
  "textColor": "rgba(255, 255, 255, 1)",
  "colorDelBoton": "rgba(255, 255, 255, 1)",
- "buttonColor": "rgba(255, 255, 255, 1)"
+ "buttonColor": "rgba(255, 42, 10, 1)"
 } as const;
 
 export default colors;
