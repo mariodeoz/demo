@@ -11,6 +11,8 @@
     cada vez que el diseñador dispara el plugin Continuous Design.
   -->
   <link rel="stylesheet" href="tokens/colors.css">
+  <link rel="stylesheet" href="tokens/fontsizes.css">
+  <link rel="stylesheet" href="tokens/borderradius.css">
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,17 +29,17 @@
     }
 
     h1 {
-      font-size: 28px;
+      font-size: var(--page-heading, 28px);
       color: #1a1a2e;
     }
 
     .demo-button {
       padding: 16px 48px;
-      font-size: 18px;
+      font-size: var(--button-label, 18px);
       font-weight: 600;
-      color: #ffffff;
+      color: var(--text-color, #ffffff);
       border: none;
-      border-radius: 10px;
+      border-radius: var(--button-radius, 10px);
       cursor: pointer;
       letter-spacing: 0.5px;
 
@@ -125,9 +127,12 @@
       <span class="color-preview" style="background-color:var(--background-color,#f0f2f5);border:1px solid #ccc;"></span><span class="token-name">--background-color</span> → fondo de la página<br>
       <span class="color-preview" style="background-color:var(--button-color,#0057ff);"></span><span class="token-name">--button-color</span> → fondo del botón<br>
       <span class="color-preview" style="background-color:var(--text-color,#fff);border:1px solid #ccc;"></span><span class="token-name">--text-color</span> → texto del botón<br>
-      <span class="color-preview" style="background-color:var(--surface-color,#fff);border:1px solid #ccc;"></span><span class="token-name">--surface-color</span> → fondo de esta tarjeta<br><br>
-      Cambiá cualquier Color Style en Figma, disparás el plugin
-      <strong>Continuous Design</strong> y toda la paleta se actualiza sola.
+      <span class="color-preview" style="background-color:var(--surface-color,#fff);border:1px solid #ccc;"></span><span class="token-name">--surface-color</span> → fondo de esta tarjeta<br>
+      <span class="token-name">--button-label</span> → tamaño de fuente del botón<br>
+      <span class="token-name">--page-heading</span> → tamaño del título<br>
+      <span class="token-name">--button-radius</span> → redondez del botón<br><br>
+      Cambiá cualquier valor en Figma, disparás el plugin
+      <strong>Continuous Design</strong> y toda la interfaz se actualiza sola.
     </p>
   </div>
 

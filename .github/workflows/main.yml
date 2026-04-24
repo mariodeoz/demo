@@ -57,43 +57,49 @@ jobs:
         run: npx figmagic --token ${{ secrets.FIGMA_TOKEN }} --url ${{ secrets.FIGMA_URL }} --versionName ${{ github.event.inputs.version }} --outputTokenFormat css
 
       # ---------------------------------------------------------------
-      # figmagic ignores --outputTokenFormat in some versions and always
-      # outputs colors.ts. This step converts it to colors.css so the
-      # rest of the pipeline can use standard CSS custom properties.
+      # figmagic outputs TypeScript regardless of --outputTokenFormat.
+      # This step converts every *.ts in tokens/ to its matching *.css.
+      # Works for colors, fontsizes, borderradius, spacing, etc.
       # ---------------------------------------------------------------
 
-      - name: Convert colors.ts to colors.css
+      - name: Convert token .ts files to .css
         id: convert-tokens
         run: |
-          if [ ! -f "tokens/colors.ts" ]; then
-            echo "tokens/colors.ts not found — nothing to convert."
-            exit 0
-          fi
-          echo "=== colors.ts content ==="
-          cat tokens/colors.ts
           node - <<'EOF'
           const fs = require('fs');
-          const src = fs.readFileSync('tokens/colors.ts', 'utf8');
-          const lines = [];
+          const path = require('path');
 
-          // figmagic format: const colors = { "buttonColor": "rgba(...)" } as const;
-          const objMatch = src.match(/const\s+\w+\s*=\s*(\{[\s\S]*?\})\s*(?:as\s+const)?\s*;/);
-          if (objMatch) {
-            const obj = JSON.parse(objMatch[1]);
-            for (const [k, v] of Object.entries(obj)) {
-              const name = '--' + k.replace(/([A-Z])/g, (_, c) => '-' + c.toLowerCase());
-              lines.push('  ' + name + ': ' + v + ';');
-            }
-          }
+          const tsFiles = fs.readdirSync('tokens').filter(f => f.endsWith('.ts'));
+          console.log('Token files found:', tsFiles);
 
-          if (lines.length === 0) {
-            console.error('ERROR: could not parse any color tokens from colors.ts');
+          if (tsFiles.length === 0) {
+            console.error('ERROR: figmagic generated no token files.');
             process.exit(1);
           }
 
-          const css = ':root {\n' + lines.join('\n') + '\n}\n';
-          fs.writeFileSync('tokens/colors.css', css);
-          console.log('=== Generated colors.css ===\n' + css);
+          // figmagic format: const <name> = { "camelKey": "value" } as const;
+          const toCssVar = k => '--' + k.replace(/([A-Z])/g, (_, c) => '-' + c.toLowerCase());
+
+          let total = 0;
+          for (const tsFile of tsFiles) {
+            const src = fs.readFileSync(path.join('tokens', tsFile), 'utf8');
+            const match = src.match(/const\s+\w+\s*=\s*(\{[\s\S]*?\})\s*(?:as\s+const)?\s*;/);
+            if (!match) { console.log(tsFile + ': no object found, skipping'); continue; }
+
+            const obj = JSON.parse(match[1]);
+            const lines = Object.entries(obj)
+              .map(([k, v]) => '  ' + toCssVar(k) + ': ' + v + ';');
+
+            if (lines.length === 0) { console.log(tsFile + ': empty object, skipping'); continue; }
+
+            const cssFile = tsFile.replace('.ts', '.css');
+            const css = ':root {\n' + lines.join('\n') + '\n}\n';
+            fs.writeFileSync(path.join('tokens', cssFile), css);
+            console.log('Generated ' + cssFile + ':\n' + css);
+            total += lines.length;
+          }
+
+          if (total === 0) { console.error('ERROR: no tokens converted.'); process.exit(1); }
           EOF
 
       - name: Diagnose figmagic output
