@@ -22,7 +22,7 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background: #f0f2f5;
+      background: var(--background-color, #f0f2f5);
       gap: 24px;
     }
 
@@ -52,6 +52,7 @@
           4. El workflow actualiza tokens/colors.css y este botón cambia de color
       */
       background-color: var(--button-color, #0057ff);
+      color: var(--text-color, #ffffff);
 
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
       transition: opacity 0.2s ease, transform 0.1s ease;
@@ -67,7 +68,7 @@
     }
 
     .info-box {
-      background: white;
+      background: var(--surface-color, #ffffff);
       border-radius: 12px;
       padding: 20px 28px;
       max-width: 480px;
@@ -120,11 +121,13 @@
   <div class="info-box">
     <h2>Cómo funciona</h2>
     <p>
-      El color de este botón (<span class="color-preview"></span><span class="token-name">--button-color</span>)
-      viene directamente del Color Style <span class="token-name">button-color</span> de tu archivo Figma.<br><br>
-      Cuando cambiás el color en Figma y ejecutás el plugin
-      <strong>Continuous Design</strong>, el workflow actualiza
-      <span class="token-name">tokens/colors.css</span> y este botón refleja el cambio automáticamente.
+      Todos los colores de esta página vienen de Color Styles en Figma:<br><br>
+      <span class="color-preview" style="background-color:var(--background-color,#f0f2f5);border:1px solid #ccc;"></span><span class="token-name">--background-color</span> → fondo de la página<br>
+      <span class="color-preview" style="background-color:var(--button-color,#0057ff);"></span><span class="token-name">--button-color</span> → fondo del botón<br>
+      <span class="color-preview" style="background-color:var(--text-color,#fff);border:1px solid #ccc;"></span><span class="token-name">--text-color</span> → texto del botón<br>
+      <span class="color-preview" style="background-color:var(--surface-color,#fff);border:1px solid #ccc;"></span><span class="token-name">--surface-color</span> → fondo de esta tarjeta<br><br>
+      Cambiá cualquier Color Style en Figma, disparás el plugin
+      <strong>Continuous Design</strong> y toda la paleta se actualiza sola.
     </p>
   </div>
 

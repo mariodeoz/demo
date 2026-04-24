@@ -1,3 +1,6 @@
 :root {
   --button-color: rgba(255, 10, 10, 1);
+  --background-color: #f0f2f5;
+  --text-color: #ffffff;
+  --surface-color: #ffffff;
 }
